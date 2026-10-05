@@ -5,13 +5,14 @@ import { AppModule } from './app.module.js';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // 🔴 OBRIGATÓRIO: Habilita o CORS para permitir requisições vindas do index.html
+  app.enableCors();
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      transform: true, // <-- Ativa a conversão automática de tipos (string -> number)
-      transformOptions: {
-        enableImplicitConversion: true, // <-- Força a conversão implícita com base nas anotações
-      },
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
     }),
   );
 

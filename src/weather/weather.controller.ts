@@ -1,5 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { RealIP } from 'nestjs-real-ip';
+import { Controller, Get, Query, Req, UsePipes, ValidationPipe } from '@nestjs/common';
 import { WeatherService } from './weather.service.js';
 import { CreateWeatherDto } from './dto/create-weather.dto.js';
 
@@ -8,10 +7,15 @@ export class WeatherController {
   constructor(private readonly weatherService: WeatherService) {}
 
   @Get('forecast')
-  async getForecast(
-    @Query() query: CreateWeatherDto,
-    @RealIP() ip: string,
-  ) {
-    return await this.weatherService.getWeatherForecast(query, ip);
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  )
+  async getForecast(@Query() query: CreateWeatherDto, @Req() req: any) {
+    // Na Vercel o IP real do cliente vem no cabeçalho x-forwarded-for
+    const clientIp = req.headers['x-forwarded-for']?.toString().split(',')[0] || req.socket?.remoteAddress;
+    return await this.weatherService.getWeatherForecast(query, clientIp);
   }
 }
